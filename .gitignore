@@ -8,6 +8,7 @@ profile.do
 
 # R
 *.Rout
+*.Rhistory
 
 # operating systems
 .DS_Store
