@@ -10,6 +10,10 @@ setwd("/Users/clairenelson/Documents/Research/great_migration")
 #Read in shapefiles
 railroad_map <- readOGR(dsn = "data/railroad_shapefiles", layer = "RR1826-1911Modified050916")
 
+#Keep only railroads in operation by 1920
+attach(railroad_map@data)
+railroad_map@data <- railroad_map@data[InOpBy<=1920,]
+
 #Fortify to data frame
 railroad_fortified <- fortify(railroad_map)
 
