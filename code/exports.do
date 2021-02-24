@@ -57,16 +57,20 @@ label values SIC_2 industry_title
 levelsof SIC_2
 foreach x in `r(levels)' {
 	local title: label (SIC_2) `x'
-	graph twoway line total_exports year if SIC_2 == `x', ///
-		xtitle("Year") ytitle("Total Exports ($)") title("`title'")
+	graph twoway connected total_exports year if SIC_2 == `x', ysc(r(0) extend) ///
+		xtitle("Year") ytitle("Total Exports ($)") title("`title'") ylabel(#6)
 	graph export "$great_migration/output/industry_`x'_exports.png", replace
 }
+
+*Compare largest industries by share of total exports 
+egen yearly_total = total(total_exports), by(year)
+gen share_total = total_exports/yearly_total
 	
 *Graph total exports over time
 preserve
 collapse (sum) total_exports, by(year)
-twoway line total_exports year, name(g_total) xtitle("Year") ///
-	ytitle("Total Exports($)") title("Total Annual Exports")
+graph twoway connected total_exports year, name(g_total) xtitle("Year") ylabel(#6) ///
+	ytitle("Total Exports($)") title("Total Annual Exports") ysc(r(0) extend)
 graph export "$great_migration/output/total_exports.png", replace
 restore
 
