@@ -11,11 +11,11 @@ append using "$great_migration/data/usa_00004.dta"
 *Population and households
 gen black = (race == 2)
 gen id = _n
-gegen population = count(id), by(countyicp year)
-gegen black_population = total(black), by(countyicp year)
+gegen population = count(id), by(stateicp countyicp year)
+gegen black_population = total(black), by(stateicp countyicp year)
 gen pct_black = black_population/population
 gen married = (marst == 1 | marst == 2)
-gegen n_married = total(married), by(countyicp year black) //Include married with spouse present or absent
+gegen n_married = total(married), by(stateicp countyicp year black) //Include married with spouse present or absent
 gen pct_married = n_married/population
 
 *Age demographics
@@ -41,7 +41,7 @@ gen nonfarm_workers = (!inlist(occ1950, 100, 123, 810, 820, 830) & age >= 15 & a
 gcollapse (nunique) households=serial (last) population pct_black pct_married ///
 	(sum) under_15 between_15_44 over_44 under_15_f between_15_44_f over_44_f under_15_m ///
 	between_15_44_m over_44_m farmers farm_owners farm_renters farm_laborers ///
-	mfg_workers nonfarm_workers, by(countyicp year black)
+	mfg_workers nonfarm_workers, by(stateicp countyicp year black)
 
 *Label variables and dataset
 la var population "County-Year-Race Population"
