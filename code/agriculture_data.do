@@ -142,16 +142,16 @@ ren (VAR43 VAR45) (FARMTEN FARMCTEN)
 gen year = 1940
 gen LANDVAL = VALUELB - FARMBUI // Calculate land value from land and buildings
 drop FARMBUI
-drop if mi(COUNTY) //Drop missing values
+drop if mi(COUNTY) | mi(FIPS) //Drop missing values
 save "`coa_1940'"
 
 *1945: missing land value
 tempfile coa_1945
 use "$great_migration/data/census_of_agriculture_1945.dta", clear
-keep STATE COUNTY FIPS TOTPOP40 NAME LEVEL VAR2 VAR3 VAR4 VAR7 VAR39 VAR43 ///
+keep STATE COUNTY FIPS TOTPOP40 NAME LEVEL VAR2 VAR3 VAR4 VAR7 VAR39 VAR44 ///
 	VAR68 VAR105 VAR458 VAR461 VAR559 VAR561
 //VAR565 VAR562 VAR563 VAR564 VAR604 VAR605 VAR606 VAR614 VAR615 VAR616
-ren (TOTPOP40 VAR2 VAR68 VAR7 VAR4 VAR458 VAR461 VAR105 VAR39 VAR43 VAR3) ///	
+ren (TOTPOP40 VAR2 VAR68 VAR7 VAR4 VAR458 VAR461 VAR105 VAR39 VAR44 VAR3) ///	
 	(TOTPOP FARMS FARMSBL FARMSIZE FARMLAND MULES HORSES TRACTORS VALUELB FARMEQUI AREAAC)
 ren (VAR559 VAR561)  (FARMTEN FARMCTEN)
 //ren (VAR565 VAR562 VAR563 VAR564 VAR604 VAR605 VAR606 VAR614 VAR615 VAR616) ///
@@ -260,50 +260,6 @@ order year state county fips name level county_area totpop farmland farmsize ///
 	farms farmsbl farmshare_bl landval valuelb farmequi horses mules tractors
 	
 *Save dataset
-save "$great_migration/data/census_of_agriculture.dta", replace
-
-preserve
-*Check that data matches Hornbeck and Naidu graphs/statistics
-*Restrict to Arkansas(42), Louisiana(45), Tennesse(54), and Missippi(46) 
-*to roughly match their sample of counties (our numbers will be slightly higher)
-keep if inlist(state, 42, 45, 54, 46)
-keep if level == 1
-
-*Figure 2: Graphs of log outcomes
-*Trends look very similar, our levels are slightly higher
-gegen sample_totpop = total(totpop), by(year)
-gegen sample_farmequi = total(farmequi), by(year)
-gegen sample_mules_horses = total(mules_horses), by(year)
-gegen sample_farmsize = total(farmsize), by(year)
-gegen sample_landval_fac = total(landval_fac), by(year)
-gen ltotpop = log(sample_totpop)
-gen lfarmequi = log(sample_farmequi)
-gen lmules_horses = log(sample_mules_horses)
-gen lfarmsize = log(sample_farmsize)
-gen llandval_fac = log(sample_landval_fac)
-
-twoway connected ltotpop year, nodraw name(g1) title("Log Population") ytitle("")
-twoway connected lfarmequi year, nodraw name(g2) title("Log Farm Equipment") ytitle("")
-twoway connected lmules_horses year, nodraw name(g3) title("Log Value of Agricultural Capital") ytitle("")
-twoway connected lfarmsize year, nodraw name(g4) title("Log Number of Mules and Horses") ytitle("")
-twoway connected llandval_fac year, nodraw name(g5) title("Log Land Value per Farm Acre") ytitle("")
-graph combine g1 g2 g3 g4 g5, title("Figure 2: Aggregate Changes in the Sample Region")
-graph export "$great_migration/output/hn_figure2.png", replace
-
-*Table 1, Column 1 Panel A: 1920 Population Means
-*Population mean is close but Black farmshare is understated here
-su totpop_100ac if year == 1920
-su farmshare_bl if year == 1920 //Slightly different
-
-*Table 1, Column 1 Panel B: 1925 Agriculture Variable Means
-*Close to Hornbeck and Naidu Values
-su farmequi_100ac if year == 1925
-su mules_horses_100ac if year == 1925
-su tractors_100ac if year == 1925
-su farmsize if year == 1925
-su farmland_100ac if year == 1925
-su valuelb_100fac if year == 1925
-su valuelb_100ac if year == 1925
-restore
+save "$great_migration/output/census_of_agriculture.dta", replace
 
 exit
