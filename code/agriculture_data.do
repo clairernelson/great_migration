@@ -149,16 +149,20 @@ save "`coa_1940'"
 tempfile coa_1945
 use "$great_migration/data/census_of_agriculture_1945.dta", clear
 keep STATE COUNTY FIPS TOTPOP40 NAME LEVEL VAR2 VAR3 VAR4 VAR7 VAR39 VAR44 ///
-	VAR68 VAR105 VAR458 VAR461 VAR559 VAR561
-//VAR565 VAR562 VAR563 VAR564 VAR604 VAR605 VAR606 VAR614 VAR615 VAR616
+	VAR68 VAR105 VAR458 VAR461 VAR559 VAR561 VAR604 VAR605 VAR606 VAR614 VAR615 VAR616
+//VAR565 VAR562 VAR563 VAR564
 ren (TOTPOP40 VAR2 VAR68 VAR7 VAR4 VAR458 VAR461 VAR105 VAR39 VAR44 VAR3) ///	
 	(TOTPOP FARMS FARMSBL FARMSIZE FARMLAND MULES HORSES TRACTORS VALUELB FARMEQUI AREAAC)
-ren (VAR559 VAR561)  (FARMTEN FARMCTEN)
-//ren (VAR565 VAR562 VAR563 VAR564 VAR604 VAR605 VAR606 VAR614 VAR615 VAR616) ///
-	//(FARMOTEN FARMSCT FARMSCR FARMCR FARMSCTWH FARMWHST FARMCRWH FARMSCTBL FARMBLST FARMCRBL) 
+ren (VAR559 VAR561 VAR604 VAR605 VAR606 VAR614 VAR615 VAR616) ///
+	(FARMTEN FARMCTEN FARMSCTWH FARMWHST FARMCRWH FARMSCTBL FARMBLST FARMCRBL)
+//ren (VAR565 VAR562 VAR563 VAR564) ///
+	//(FARMOTEN FARMSCT FARMSCR FARMCR) 
 gen year = 1945
 gen AREA = AREAAC * 0.0015625 //Convert county area to square miles
 drop AREAAC
+foreach x in FARMSCTWH FARMWHST FARMCRWH FARMSCTBL FARMBLST FARMCRBL {
+	ren `x' `x'_1945
+}
 save "`coa_1945'"
 
 *1950: missing land value and value of equipment
@@ -208,17 +212,19 @@ gen share_tenant_wh = farmwht / (farms - farmsbl)
 *Missing number of cash tenants for 1935, imputed total tenants for 1920, 1930, 1935
 *Total and by race
 gen noncash_tenants = farmten - farmcten
-replace noncash_tenants = farmcr_1935 if year == 1935 //Estimate using number of croppers
+//replace noncash_tenants = farmcr_1935 if year == 1935 //Estimate using number of croppers
 gen noncash_tenants_bl = farmblt - farmblct
-replace noncash_tenants_bl = farmcrbl_1935 if year == 1935 //Estimate using number of croppers
+//replace noncash_tenants_bl = farmcrbl_1935 if year == 1935 //Estimate using number of croppers
+replace noncash_tenants_bl = farmsctbl_1945 + farmblst_1945 + farmcrbl_1945 if year == 1945 //Add up share-cash, share, and croppers to get noncash tenants
 gen noncash_tenants_wh = farmwht - farmwhct
-replace noncash_tenants_wh = farmcrwh_1935 if year == 1935 //Estimate using number of croppers
+//replace noncash_tenants_wh = farmcrwh_1935 if year == 1935 //Estimate using number of croppers
+replace noncash_tenants_wh = farmsctwh_1945 + farmwhst_1945 + farmcrwh_1945 if year == 1945 //Add up share-cash, share, and croppers to get noncash tenants
 
 *Calculate share of farmers that are non-cash tenants
 gen share_noncash = noncash_tenants / farms
 gen share_noncash_bl = noncash_tenants_bl / farmsbl
 gen share_noncash_wh = noncash_tenants_wh / (farms-farmsbl)
-drop *1935
+drop *1935 *1945
 
 *Label variables and dataset
 la var farmsbl "Number of Black-operated farms"
