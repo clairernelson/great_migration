@@ -1,5 +1,6 @@
 output/
 data/
+.idea*
 
 # stata
 profile.do
